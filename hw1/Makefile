@@ -1,4 +1,4 @@
-CXX = clang++ -O3 -std=c++17
+CXX = g++ -O3 -std=c++17
 COMPILE_FILES = hw1.cpp
 
 all: $(COMPILE_FILES)
