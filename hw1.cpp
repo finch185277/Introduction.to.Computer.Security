@@ -19,7 +19,7 @@
 //#define DESTMAC3 0xfc
 //#define DESTMAC4 0x52
 //#define DESTMAC5 0x85
-#define query_type 1
+#define query_type 0x00ff
 // DNS HEADER Structure
 struct DNS_HEADER {
   unsigned short id; // identification
@@ -79,7 +79,7 @@ void DNSNameFormat(unsigned char *DNS, unsigned char *host) {
   *DNS++ = '\0';
 }
 int main(int argc, char **argv) {
-  unsigned char hostname[100] = "google.com";
+  unsigned char hostname[100] = "us.org";
   int one = 1;
   const int *val = &one;
   int sock;
@@ -199,15 +199,12 @@ int main(int argc, char **argv) {
     if ((setsockopt(sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one))) < 0)
       printf("\nsetsockopt error\n");
 
-    struct sockaddr_in sin, din;
+    struct sockaddr_in sin;
     sin.sin_family = AF_INET;
-    din.sin_family = AF_INET;
 
-    sin.sin_port = htons(38210);
-    din.sin_port = htons(53);
+    sin.sin_port = htons(53);
 
-    sin.sin_addr.s_addr = inet_addr(argv[1]);
-    din.sin_addr.s_addr = inet_addr(argv[2]);
+    sin.sin_addr.s_addr = inet_addr(argv[2]);
 
     printf("\nAt last: %d\n", total);
 
