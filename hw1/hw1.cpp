@@ -11,49 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>  // ioctl
-#include <sys/socket.h> // this for struct sockaddr, socket ,and AF_PACKET
+#include <sys/socket.h> // this for struct sockaddr, socket ,and AF_INET
 #include <unistd.h>     //getpid
-//#define DESTMAC0 0x90
-//#define DESTMAC1 0x94
-//#define DESTMAC2 0xe4
-//#define DESTMAC3 0xfc
-//#define DESTMAC4 0x52
-//#define DESTMAC5 0x85
-#define query_type 0x00ff
-// DNS HEADER Structure
-struct DNS_HEADER {
-  unsigned short id; // identification
-
-  unsigned char rd : 1;     // recursion desired
-  unsigned char tc : 1;     // truncated message
-  unsigned char aa : 1;     // authoritive answer
-  unsigned char opcode : 4; // purpose of the message
-  unsigned char qr : 1;     // query/response flag
-
-  unsigned char rcode : 4; // response code
-  unsigned char cd : 1;    // checking disabled
-  unsigned char ad : 1;    // authenticated data
-  unsigned char z : 1;     // its z! reserved
-  unsigned char ra : 1;    // recursion available
-
-  unsigned short q_count;    // number of question entries
-  unsigned short ans_count;  // number of answer entries
-  unsigned short auth_count; // number of autority entries
-  unsigned short add_count;  // number of resource entries
-};
-typedef struct add {
-  unsigned char Name;
-  unsigned short Type;
-  unsigned short UDP_Payload_Size;
-  unsigned char HBIER; // higher bit in extended Rcode
-  unsigned char EDNS0_V;
-  unsigned short Z;
-  unsigned short data_length;
-} Additional_Records;
-struct QUESTION {
-  unsigned short type;
-  unsigned short qclass;
-};
 unsigned short checksum(unsigned short *buff, int nwords) {
   unsigned long sum;
   for (sum = 0; nwords > 0; nwords--)
@@ -63,23 +22,7 @@ unsigned short checksum(unsigned short *buff, int nwords) {
   sum += (sum >> 16);
   return (unsigned short)(~sum);
 }
-void DNSNameFormat(unsigned char *DNS, unsigned char *host) {
-  int lock = 0, i;
-  strcat((char *)host, ".");
-
-  for (i = 0; i < strlen((char *)host); i++) {
-    if (host[i] == '.') {
-      *DNS++ = i - lock;
-      for (; lock < i; lock++) {
-        *DNS++ = host[lock];
-      }
-      lock++;
-    }
-  }
-  *DNS++ = '\0';
-}
 int main(int argc, char **argv) {
-  unsigned char hostname[100] = "us.org";
   int one = 1;
   const int *val = &one;
   int sock;
@@ -107,63 +50,66 @@ int main(int argc, char **argv) {
     total += sizeof(struct iphdr);
     struct udphdr *uh = (struct udphdr *)(sendbuff + sizeof(struct iphdr));
 
-    uh->source = htons(38210);
+    uh->source = htons(34820);
     uh->dest = htons(53);
     uh->check = 0;
 
     total += sizeof(struct udphdr);
 
-    struct DNS_HEADER *DNS =
-        (struct DNS_HEADER *)(sendbuff + sizeof(struct iphdr) + sizeof(udphdr));
+    unsigned short *i = (unsigned short *)(sendbuff + sizeof(struct iphdr) +
+                                           sizeof(struct udphdr));
 
-    DNS->id = (unsigned short)htons(getpid());
+    unsigned char flag1 = 0x01;
+    unsigned char flag2 = 0x20;
 
-    DNS->qr = 0; // this is a query instead of response;
+    unsigned char q_count1 = 0x00;
+    unsigned char q_count2 = 0x01;
+    unsigned char ans_count1 = 0x00;
+    unsigned char ans_count2 = 0x00;
 
-    DNS->opcode = 0; // this is a standard query;
+    unsigned char auth_count1 = 0x00;
+    unsigned char auth_count2 = 0x00;
+    unsigned char add_count1 = 0x00;
+    unsigned char add_count2 = 0x01;
 
-    DNS->aa = 0; // Not Authoritative
+    *i = (unsigned short)htons(getpid());
+    total += sizeof(unsigned short);
+    sendbuff[total++] = flag1;
+    sendbuff[total++] = flag2;
+    sendbuff[total++] = q_count1;
+    sendbuff[total++] = q_count2;
+    sendbuff[total++] = ans_count1;
+    sendbuff[total++] = ans_count2;
+    sendbuff[total++] = auth_count1;
+    sendbuff[total++] = auth_count2;
+    sendbuff[total++] = add_count1;
+    sendbuff[total++] = add_count2;
 
-    DNS->tc = 0; // This message is not truncated
+    unsigned char name1 = 0x02;
+    unsigned char name2 = 0x75;
+    unsigned char name3 = 0x73;
+    unsigned char name4 = 0x03;
+    unsigned char name5 = 0x6f;
+    unsigned char name6 = 0x72;
+    unsigned char name7 = 0x67;
+    unsigned char name8 = 0x00;
+    sendbuff[total++] = name1;
+    sendbuff[total++] = name2;
+    sendbuff[total++] = name3;
+    sendbuff[total++] = name4;
+    sendbuff[total++] = name5;
+    sendbuff[total++] = name6;
+    sendbuff[total++] = name7;
+    sendbuff[total++] = name8;
 
-    DNS->rd = 1; // recursion desired
-
-    DNS->ra = 0; // Recursion is not available.
-
-    DNS->z = 0; // z!
-
-    DNS->ad = 1;
-
-    DNS->cd = 0;
-
-    DNS->rcode = 0;
-
-    DNS->q_count = htons(1); // one question;
-
-    DNS->ans_count = 0;
-
-    DNS->auth_count = 0;
-
-    DNS->add_count = htons(1);
-
-    printf("\nDNS: %lu\n", sizeof(struct DNS_HEADER));
-    total += sizeof(struct DNS_HEADER);
-    printf("\nAfter DNS : %d\n", total);
-    unsigned char *q_name =
-        (unsigned char *)(sendbuff + sizeof(struct iphdr) + sizeof(udphdr) +
-                          sizeof(DNS_HEADER));
-    DNSNameFormat(q_name, hostname);
-    printf("\n");
-
-    total += (strlen((const char *)q_name) + 1);
-    struct QUESTION *qinfo;
-    qinfo = (struct QUESTION *)(sendbuff + sizeof(struct iphdr) +
-                                sizeof(udphdr) + sizeof(DNS_HEADER) +
-                                (strlen((const char *)q_name) + 1));
-    qinfo->type = htons(query_type);
-    qinfo->qclass = htons(1);
-
-    total += (sizeof(struct QUESTION));
+    unsigned char DNS_Type1 = 0x00;
+    unsigned char DNS_Type2 = 0xff;
+    unsigned char DNS_class1 = 0x00;
+    unsigned char DNS_class2 = 0x01;
+    sendbuff[total++] = DNS_Type1;
+    sendbuff[total++] = DNS_Type2;
+    sendbuff[total++] = DNS_class1;
+    sendbuff[total++] = DNS_class2;
 
     unsigned char Name = 0x00;
     unsigned char Type1 = 0x00;
