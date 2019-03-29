@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     sendbuff = (unsigned char *)malloc(128);
     memset(sendbuff, 0, 128);
 
-    // construct an ip header
+    // construct an IP header
     struct iphdr *iph = (struct iphdr *)(sendbuff);
     iph->ihl = 5;     // ip header length
     iph->version = 4; // ipv4
@@ -48,25 +48,24 @@ int main(int argc, char **argv) {
     iph->saddr = inet_addr(argv[1]);
     iph->daddr = inet_addr(argv[2]);
     total += sizeof(struct iphdr);
-    struct udphdr *uh = (struct udphdr *)(sendbuff + sizeof(struct iphdr));
 
+    // construct an UDP header
+    struct udphdr *uh = (struct udphdr *)(sendbuff + sizeof(struct iphdr));
     uh->source = htons(34820);
     uh->dest = htons(53);
     uh->check = 0;
-
     total += sizeof(struct udphdr);
 
     unsigned short *i = (unsigned short *)(sendbuff + sizeof(struct iphdr) +
                                            sizeof(struct udphdr));
 
+    // construct an DNS query
     unsigned char flag1 = 0x01;
     unsigned char flag2 = 0x20;
-
     unsigned char q_count1 = 0x00;
     unsigned char q_count2 = 0x01;
     unsigned char ans_count1 = 0x00;
     unsigned char ans_count2 = 0x00;
-
     unsigned char auth_count1 = 0x00;
     unsigned char auth_count2 = 0x00;
     unsigned char add_count1 = 0x00;
@@ -74,6 +73,7 @@ int main(int argc, char **argv) {
 
     *i = (unsigned short)htons(getpid());
     total += sizeof(unsigned short);
+
     sendbuff[total++] = flag1;
     sendbuff[total++] = flag2;
     sendbuff[total++] = q_count1;
@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
     sendbuff[total++] = add_count1;
     sendbuff[total++] = add_count2;
 
+    // name = "us.org"
     unsigned char name1 = 0x02;
     unsigned char name2 = 0x75;
     unsigned char name3 = 0x73;
@@ -124,7 +125,6 @@ int main(int argc, char **argv) {
     unsigned char data_length2 = 0x00;
     sendbuff[total++] = Name;
     sendbuff[total++] = Type1;
-
     sendbuff[total++] = Type2;
     sendbuff[total++] = UDP_Payload_Size1;
     sendbuff[total++] = UDP_Payload_Size2;
@@ -136,20 +136,17 @@ int main(int argc, char **argv) {
     sendbuff[total++] = data_length2;
 
     uh->len = htons((total - sizeof(struct iphdr)));
-
     iph->tot_len = htons(total);
-
     iph->check =
         checksum((unsigned short *)(sendbuff), (sizeof(struct iphdr) / 2));
     printf("\nAfter udp : %d\n", total);
+
     if ((setsockopt(sock, IPPROTO_IP, IP_HDRINCL, val, sizeof(one))) < 0)
       printf("\nsetsockopt error\n");
 
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
-
     sin.sin_port = htons(53);
-
     sin.sin_addr.s_addr = inet_addr(argv[2]);
 
     printf("\nAt last: %d\n", total);
@@ -158,6 +155,7 @@ int main(int argc, char **argv) {
         sendto(sock, sendbuff, total, 0, (struct sockaddr *)&sin, sizeof(sin));
     if (send_len < 0)
       printf("\nsendto error\n");
-    printf("\n succeed! \n");
+    else
+      printf("\n succeed! \n");
   }
 }
