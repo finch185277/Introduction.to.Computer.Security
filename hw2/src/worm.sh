@@ -15,7 +15,7 @@ check_crontab() {
 
 main() {
   local home_dir="/home/victim"
-  local launch_dir=".launch_attack"
+  local launch_dir=".Launch_Attack"
   local dir01=".etc"
   local dir02=".var"
   local module_dir=".module"
