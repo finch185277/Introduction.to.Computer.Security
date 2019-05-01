@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 deploy() {
   mkdir -p "$home_dir/$launch_dir1"
