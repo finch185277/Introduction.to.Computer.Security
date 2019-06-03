@@ -3,4 +3,4 @@ you-should-read-manual:REFERENCES_now_you_KnoW_HOW_IMPORTANT_IS_Documentation_DO
 Nasty-rules:C_operator_priority_really_confuses_anybody_so_MAKE_sure_you_have_CHECK_the_references
 Lucky-pot:GNU_I_will_Check_my_code_logic_and_DO_some_uniTTest_After_THIS:(
 Flagbin:PACKER_c0mpos1tOr_sure_YOU_kNOW_the_basic_SKILL
-Random-pass-auth:
+Random-pass-auth:Error handling We ALL should check fclose return value and handle is correctly in the future ^_^
